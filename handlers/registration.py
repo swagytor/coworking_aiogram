@@ -74,9 +74,7 @@ async def enter_password(message: types.Message, state: FSMContext):
         return await main_menu(message, state)
 
     else:
-        await message.bot.send_message(message.from_user.id, response.text)
-        await message.bot.send_message(message.from_user.id, "Авторизация не удалась!",
-                                       reply_markup=types.ReplyKeyboardRemove())
+        await message.bot.send_message(message.from_user.id, response, reply_markup=types.ReplyKeyboardRemove())
         await state.set_state(None)
         return await coworking_auth(message, state)
 
