@@ -13,7 +13,7 @@ async def check_coworking_auth(auth_data) -> tuple[requests.Response, bool]:
 
 
 async def create_user(data):
-    response = requests.post(f"{config.BACKEND_URL}/users/create_user/", json=data)
+    response = requests.post(f"{config.BACKEND_URL}/users/register_user/", json=data)
 
     if response.status_code == 200:
         return response, True

@@ -10,12 +10,16 @@ from states.registration import RegisterState
 
 
 async def start(message: types.Message, state: FSMContext):
-    response = requests.get(f"{config.BACKEND_URL}/users/check_tg_user/?tg_id={message.from_user.id}")
+    response = requests.get(f"{config.BACKEND_URL}/users/check_tg_user/?tg_id={message.from_user.id}").json()
+
+    data = await state.get_data()
+
+    data["is_exist"] = response['is_exist']
 
     if response.status_code == 200:
-        if response.json()['is_exist']:
+        if response['is_exist']:
             await state.set_state(RegisterState.registration)
-            return await main_menu(message)
+            return await main_menu(message, state)
         else:
             return await registration(message, state)
 
@@ -31,7 +35,7 @@ async def registration(message: types.Message, state: FSMContext):
 
 async def coworking_auth(message: types.Message, state: FSMContext):
     await message.reply(
-        "Отлично! Для того, чтобы авторизоваться в коворкинг ПРОСТО, введи почту, к которой привязан твой аккаунт",
+        "Чтобы авторизоваться в коворкинг ПРОСТО, введи почту, к которой привязан твой аккаунт",
         reply_markup=types.ReplyKeyboardRemove())
 
     await state.set_state(RegisterState.enter_email)
@@ -63,9 +67,12 @@ async def enter_password(message: types.Message, state: FSMContext):
     if success:
         await message.reply("Авторизация прошла успешно!", reply_markup=types.ReplyKeyboardRemove())
         auth_data["username"] = message.from_user.username
-        await create_user(auth_data)
+        auth_data["tg_id"] = message.from_user.id
 
-        return await main_menu(message)
+        if not data.get("is_exist", True):
+            await create_user(auth_data)
+
+        return await main_menu(message, state)
 
     else:
         await message.bot.send_message(message.from_user.id, response.text)
