@@ -10,14 +10,15 @@ from states.registration import RegisterState
 
 
 async def start(message: types.Message, state: FSMContext):
-    response = requests.get(f"{config.BACKEND_URL}/users/check_tg_user/?tg_id={message.from_user.id}").json()
+    response = requests.get(f"{config.BACKEND_URL}/users/check_tg_user/?tg_id={message.from_user.id}")
+    is_exist = response.json()["is_exist"]
 
     data = await state.get_data()
 
-    data["is_exist"] = response['is_exist']
+    data["is_exist"] = is_exist
 
     if response.status_code == 200:
-        if response['is_exist']:
+        if is_exist:
             await state.set_state(RegisterState.registration)
             return await main_menu(message, state)
         else:
@@ -53,8 +54,6 @@ async def enter_email(message: types.Message, state: FSMContext):
 async def enter_password(message: types.Message, state: FSMContext):
     await state.update_data(password=message.text)
 
-    await message.reply("Проверка авторизации в ПРОСТО", reply_markup=types.ReplyKeyboardRemove())
-
     data = await state.get_data()
 
     auth_data = {
@@ -80,3 +79,7 @@ async def enter_password(message: types.Message, state: FSMContext):
                                        reply_markup=types.ReplyKeyboardRemove())
         await state.set_state(None)
         return await coworking_auth(message, state)
+
+
+async def change_auth_data(message: types.Message, state: FSMContext):
+    return await coworking_auth(message, state)

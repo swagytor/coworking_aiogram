@@ -19,7 +19,7 @@ async def register_to_coworking(message: types.Message, state: FSMContext):
 
 
 async def choose_coworking(message: types.Message, state: FSMContext):
-    external_id, _ = message.text.split(".")
+    external_id = message.text.split(".")[0]
 
     data = {
         "coworking_id": external_id,
@@ -30,16 +30,16 @@ async def choose_coworking(message: types.Message, state: FSMContext):
 
     if response.status_code == 200:
         response = response.json()
-        await message.reply(response['detail'], reply_markup=types.ReplyKeyboardRemove())
+        await message.bot.send_message(message.from_user.id,
+                                       response['detail'],
+                                       reply_markup=types.ReplyKeyboardRemove())
 
         qr = await get_qr_code(response['qr_code'])
-
-        await message.reply("Ваш QR код на запись", reply_markup=types.ReplyKeyboardRemove())
-        await message.reply_photo(qr)
+        await message.bot.send_photo(message.from_user.id, qr)
 
     else:
         await message.reply("Произошла ошибка при записи в коворкинг")
 
-    await state.set_state(None)
+        await state.set_state(None)
 
     return await main_menu(message, state)

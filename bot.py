@@ -31,7 +31,7 @@ async def start():
     dp.message.register(events.register_to_coworking, MainMenuState.main_menu, F.text == "Записаться в коворкинг")
     dp.message.register(events.choose_coworking, EventState.choose_coworking)
 
-    dp.message.register(main_menu.change_auth_data, MainMenuState.change_auth_data,
+    dp.message.register(registration.change_auth_data, MainMenuState.main_menu,
                         F.text == "Изменить авторизационные данные")
 
     try:
